@@ -1,20 +1,26 @@
 pipeline {
     agent any
     stages {
-        stage ('Início') {
+        stage ('Build') {
             steps {
-                sh 'echo inicio'
+                sh 'mvn clean package -DskipTests=true'
             }
         }
-        stage ('Meio'){
+        stage ('Tests'){
             steps {
-                sh 'echo meio'
+                sh 'mvn test'
             }
         }
-        stage ('Fim'){
+        stage ('Sonar Analysis'){
+            environment {
+                scannerHome = tool 'sonar_scanner'
+            }
             steps {
-                sh 'echo meio'
+                withSonarQubeEnv('sonar'){
+                    sh "${scannerHome}/bin/sonar-scanner -e -Dsonar.projectKey=CICD -Dsonar.host.url=http://sonarqube:9000 -Dsonar.login=14d583af6c45fe7abab4a6d26a4daa325fe8bd28 -Dsonar.java.binaries=target"
+                }
             }
         }
     }
 }
+
